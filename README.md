@@ -12,8 +12,8 @@ if (query.minPrice || query.maxPrice) {
     if (query.maxPrice) filter.price.$lte = Number(query.maxPrice);
 }
 ```
-
-    This code checks if the user provided either a minimum price or a maximum price in the request, and inside of a filter object creates an empty price. If either a minPrice or a maxPrice exists adds the either the $lte or $gte operator and converts the value to a number and filters the products that are are within the price range given.
+`
+    This code checks if the user provided either a minimum price or a maximum price in the request, and inside of a filter object creates an empty price. If either a minPrice or a maxPrice exists adds the either     the $lte or $gte operator and converts the value to a number and filters the products that are are within the price range given.
 
 3. What is the program `seed.js` used for?
 
