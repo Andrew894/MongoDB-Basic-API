@@ -10,11 +10,11 @@ const port = Number(process.env.PORT) || 3000;
 app.use(express.json());
 app.use(express.static(path.join(__dirname, '..', 'public')));
 
-function BuildProductQuery(query) {
+function BuildBookQuery(query) {
   const filter = {};
 
-  if (query.warehouse) {
-    filter.warehouse = query.warehouse.toUpperCase();
+  if (query.books) {
+    filter.books = query.books.toUpperCase();
   }
 
   if (query.name) {
@@ -27,27 +27,27 @@ function BuildProductQuery(query) {
     if (query.maxPrice) filter.price.$lte = Number(query.maxPrice);
   }
 
-  if (query.minQuantity || query.maxQuantity) {
-    filter.quantity = {};
-    if (query.minQuantity) filter.quantity.$gte = Number(query.minQuantity);
-    if (query.maxQuantity) filter.quantity.$lte = Number(query.maxQuantity);
+  if (query.minYear || query.maxYear) {
+    filter.year = {};
+    if (query.minYear) filter.year.$gte = Number(query.minYear);
+    if (query.maxYear) filter.year.$lte = Number(query.maxYear);
   }
 
   return filter;
 }
 
-function ValidateProduct(product) {
-  if (!product.name || typeof product.name !== 'string') {
-    return 'Product name is required.';
+function ValidateBook(book) {
+  if (!book.name || typeof book.name !== 'string') {
+    return 'Book name is required.';
   }
-  if (typeof product.price !== 'number' || product.price < 0) {
-    return 'Product price must be a non-negative number.';
+  if (typeof book.price !== 'number' || book.price < 0) {
+    return 'Book price must be a non-negative number.';
   }
-  if (!Number.isInteger(product.quantity) || product.quantity < 0) {
-    return 'Product quantity must be a non-negative integer.';
+  if (!Number.isInteger(book.year) || book.year < 0) {
+    return 'Book year must be a non-negative integer.';
   }
-  if (!product.warehouse || typeof product.warehouse !== 'string') {
-    return 'Product warehouse is required.';
+  if (!book.author || typeof book.author !== 'string') {
+    return 'Book author is required.';
   }
   return null;
 }
@@ -55,71 +55,71 @@ function ValidateProduct(product) {
 app.get('/api/health', async (request, response) => {
   const collection = await ConnectToDatabase();
   const count = await collection.countDocuments();
-  response.json({ status: 'ok', database: process.env.DB_NAME, products: count });
+  response.json({ status: 'ok', database: process.env.DB_NAME, books: count });
 });
 
-app.get('/api/products', async (request, response) => {
+app.get('/api/books', async (request, response) => {
   const collection = await ConnectToDatabase();
-  const filter = BuildProductQuery(request.query);
-  const products = await collection.find(filter).sort({ name: 1 }).toArray();
-  response.json(products);
+  const filter = BuildBookQuery(request.query);
+  const books = await collection.find(filter).sort({ name: 1 }).toArray();
+  response.json(books);
 });
 
-app.get('/api/products/:id', async (request, response) => {
+app.get('/api/books/:id', async (request, response) => {
   const id = ToObjectId(request.params.id);
   if (!id) {
-    return response.status(400).json({ error: 'Invalid product id.' });
+    return response.status(400).json({ error: 'Invalid book id.' });
   }
 
   const collection = await ConnectToDatabase();
-  const product = await collection.findOne({ _id: id });
+  const book = await collection.findOne({ _id: id });
 
-  if (!product) {
-    return response.status(404).json({ error: 'Product not found.' });
+  if (!book) {
+    return response.status(404).json({ error: 'Book not found.' });
   }
 
-  response.json(product);
+  response.json(book);
 });
 
-app.post('/api/products', async (request, response) => {
-  const product = {
+app.post('/api/books', async (request, response) => {
+  const book = {
     name: request.body.name,
-    price: Number(request.body.price),
-    quantity: Number(request.body.quantity),
-    warehouse: String(request.body.warehouse || '').toUpperCase()
+    author: request.body.author,
+    year: Number(request.body.year),
+    price: Number(request.body.price)
   };
 
-  const error = ValidateProduct(product);
+  const error = ValidateBook(book);
   if (error) {
     return response.status(400).json({ error });
   }
 
   try {
     const collection = await ConnectToDatabase();
-    const result = await collection.insertOne(product);
-    response.status(201).json({ ...product, _id: result.insertedId });
+    const result = await collection.insertOne(book);
+    response.status(201).json({ ...book, _id: result.insertedId });
   } catch (error) {
     if (error.code === 11000) {
-      return response.status(409).json({ error: 'A product with this name already exists.' });
+      return response.status(409).json({ error: 'A book with this name already exists.' });
     }
     throw error;
   }
 });
 
-app.put('/api/products/:id', async (request, response) => {
+app.put('/api/books/:id', async (request, response) => {
   const id = ToObjectId(request.params.id);
   if (!id) {
-    return response.status(400).json({ error: 'Invalid product id.' });
+    return response.status(400).json({ error: 'Invalid book id.' });
   }
 
-  const product = {
+  const book = {
     name: request.body.name,
-    price: Number(request.body.price),
-    quantity: Number(request.body.quantity),
-    warehouse: String(request.body.warehouse || '').toUpperCase()
+    athor: request.body.author,
+    year: Number(request.body.year),
+    price: Number(request.body.price)
   };
 
-  const error = ValidateProduct(product);
+  const error = ValidateBook(book);
   if (error) {
     return response.status(400).json({ error });
   }
@@ -127,30 +127,28 @@ app.put('/api/products/:id', async (request, response) => {
   const collection = await ConnectToDatabase();
   const result = await collection.findOneAndUpdate(
     { _id: id },
-    { $set: product },
+    { $set: books },
     { returnDocument: 'after' }
   );
 
   if (!result) {
-    return response.status(404).json({ error: 'Product not found.' });
+    return response.status(404).json({ error: 'book not found.' });
   }
 
   response.json(result);
 });
 
-app.patch('/api/products/:id', async (request, response) => {
+app.patch('/api/books/:id', async (request, response) => {
   const id = ToObjectId(request.params.id);
   if (!id) {
-    return response.status(400).json({ error: 'Invalid product id.' });
+    return response.status(400).json({ error: 'Invalid book id.' });
   }
 
   const updates = {};
   if (request.body.name !== undefined) updates.name = request.body.name;
+  if (request.body.author !== undefined) updates.author = request.body.author;
+  if (request.body.year !== undefined) updates.year = Number(request.body.yaer);
   if (request.body.price !== undefined) updates.price = Number(request.body.price);
-  if (request.body.quantity !== undefined) updates.quantity = Number(request.body.quantity);
-  if (request.body.warehouse !== undefined) updates.warehouse = String(request.body.warehouse).toUpperCase();
-  if (request.body.status !== undefined) updates.status = request.body.status;
-  if (request.body.reorderNeeded !== undefined) updates.reorderNeeded = Boolean(request.body.reorderNeeded);
 
   const collection = await ConnectToDatabase();
   const result = await collection.findOneAndUpdate(
@@ -160,23 +158,23 @@ app.patch('/api/products/:id', async (request, response) => {
   );
 
   if (!result) {
-    return response.status(404).json({ error: 'Product not found.' });
+    return response.status(404).json({ error: 'Book not found.' });
   }
 
   response.json(result);
 });
 
-app.delete('/api/products/:id', async (request, response) => {
+app.delete('/api/books/:id', async (request, response) => {
   const id = ToObjectId(request.params.id);
   if (!id) {
-    return response.status(400).json({ error: 'Invalid product id.' });
+    return response.status(400).json({ error: 'Invalid book id.' });
   }
 
   const collection = await ConnectToDatabase();
   const result = await collection.deleteOne({ _id: id });
 
   if (result.deletedCount === 0) {
-    return response.status(404).json({ error: 'Product not found.' });
+    return response.status(404).json({ error: 'Book not found.' });
   }
 
   response.status(204).send();
@@ -188,7 +186,7 @@ app.use((error, request, response, next) => {
 });
 
 const server = app.listen(port, () => {
-  console.log(`Products API running on http://localhost:${port}`);
+  console.log(`Books API running on http://localhost:${port}`);
 });
 
 process.on('SIGTERM', async () => {
