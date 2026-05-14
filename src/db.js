@@ -2,7 +2,7 @@ const { MongoClient, ObjectId } = require('mongodb');
 require('dotenv').config();
 
 const uri = process.env.MONGODB_URI || 'mongodb://db:27017';
-const dbName = process.env.DB_NAME || 'storeDB';
+const dbName = process.env.DB_NAME || 'booksDB';
 const collectionName = process.env.COLLECTION_NAME || 'books';
 
 let client;
@@ -20,7 +20,6 @@ async function ConnectToDatabase() {
   collection = db.collection(collectionName);
 
   await collection.createIndex({ name: 1 }, { unique: true });
-  await collection.createIndex({ book: 1 });
 
   return collection;
 }

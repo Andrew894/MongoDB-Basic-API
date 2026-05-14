@@ -1,9 +1,11 @@
 services:
   app:
     build: .
+    ports:
+      - "3000:3000"
     volumes:
-      - ..:/workspace
-    command: sleep infinity
+      - .:/workspace
+    command: node src/server.js
     depends_on:
       - db
 

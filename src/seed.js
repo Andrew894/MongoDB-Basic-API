@@ -1,11 +1,11 @@
 const { ConnectToDatabase, CloseDatabase } = require('./db');
-const products = require('./books');
+const books = require('./books');
 
 async function Seed() {
   const collection = await ConnectToDatabase();
   await collection.deleteMany({});
-  const result = await collection.insertMany(products);
-  console.log(`Inserted ${result.insertedCount} products.`);
+  const result = await collection.insertMany(books);
+  console.log(`Inserted ${result.insertedCount} books.`);
 }
 
 Seed()

@@ -114,7 +114,7 @@ app.put('/api/books/:id', async (request, response) => {
 
   const book = {
     name: request.body.name,
-    athor: request.body.author,
+    author: request.body.author,
     year: Number(request.body.year),
     price: Number(request.body.price)
   };
@@ -127,7 +127,7 @@ app.put('/api/books/:id', async (request, response) => {
   const collection = await ConnectToDatabase();
   const result = await collection.findOneAndUpdate(
     { _id: id },
-    { $set: books },
+    { $set: book },
     { returnDocument: 'after' }
   );
 
@@ -147,7 +147,7 @@ app.patch('/api/books/:id', async (request, response) => {
   const updates = {};
   if (request.body.name !== undefined) updates.name = request.body.name;
   if (request.body.author !== undefined) updates.author = request.body.author;
-  if (request.body.year !== undefined) updates.year = Number(request.body.yaer);
+  if (request.body.year !== undefined) updates.year = Number(request.body.year);
   if (request.body.price !== undefined) updates.price = Number(request.body.price);
 
   const collection = await ConnectToDatabase();
