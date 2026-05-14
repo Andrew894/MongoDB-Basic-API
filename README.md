@@ -20,9 +20,11 @@ If either a minPrice or a maxPrice exists adds either the $lte or $gte operator 
 
 `seed.js` is used to populate the database with inital data so the database does not start empty.
 
-5. Try all API routes using Postman
+4. Try all API routes using Postman
 
-In terms of code what is the difference between `put` and `patch`
+5. In terms of code what is the difference between `put` and `patch`
+
+PUT replaces the entire object, so you can edit, add, and delete parts of it at the same time. PATCH only updates a part of the object based off the field being sent.
 
 ## Exercise
 Do a repo of your own to represent whatever you want, as long as it has four fields (data members), make sure that your program has the "same" API routes and to provide test data. 
