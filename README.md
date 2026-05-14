@@ -1,6 +1,9 @@
 # MongoDB-Basic-API
 ## Questions
 1. What is the purpose of using `.env`
+
+    To parameterize configurations per enviroment, also stores sensative information like passwords and API keys seperate from the main application. 
+
 2. How does this work:
 ```js
 if (query.minPrice || query.maxPrice) {
